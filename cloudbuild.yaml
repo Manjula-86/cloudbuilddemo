@@ -1,27 +1,14 @@
 steps:
-  - id: "get build number"
-    name: gcr.io/cloud-builders/git
-    dir: 'cloudbuilddemo'
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - |
-        git rev-parse --short HEAD > _BUILDNUMBER
-    waitFor: ['-']
+# 1. Fetch the source code
+- name: gcr.io/cloud-builders/git
+  args: ['clone', 'https://github.com/Manjula-86/cloudbuilddemo.git']
+  
 
-- id: "build and submit the dataflow job"
-    name: maven:3.6.0-jdk-11-slim
-    dir: 'cloudbuilddemo'
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - |
-        buildNumber=$(cat _BUILDNUMBER)
-        echo "Build Number is ${buildNumber}"
-          --runner=DataflowRunner \
-          --autoscalingAlgorithm=THROUGHPUT_BASED \
-          --maxNumWorkers=10 \
-          --jobName=demo \
-          --buildNumber=${buildNumber} \
-          --region=us
+ - name: maven:3.6.0-jdk-11-slim
+   entrypoint: mvn
+   args: ['package','-Dmaven.test.skip=true']   
+   
+- name: gcr.io/cloud-builders/docker
+  args: ['build', '-t', 'gcr.io/linen-striker-359705/docker', '--build-arg=JAR_FILE=target/build-artifact', '.']
+images: ['gcr.io/linen-striker-359705/docker']
           

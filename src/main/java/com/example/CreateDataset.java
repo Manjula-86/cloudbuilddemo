@@ -45,6 +45,6 @@ public class CreateDataset {
     }
   }
 
-  public create
+  
 }
 // [END bigquery_create_dataset]
